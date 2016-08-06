@@ -1,2 +1,2 @@
 # emacs-tree
-Tree data structure in Emacs
+Tree data structure in Emacs Lisp.
