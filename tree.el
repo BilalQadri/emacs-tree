@@ -6,6 +6,10 @@
 	 (display-warning 'ignore  "value is not type of 'node struct in VALID-NODE! macro." :warning))
      (display-warning 'ignore  "list is empty in VALID-NODE!." :warning)))
 
+(defmacro not-nil! (value &rest body)
+  `(if (not (null ,value))
+       ,@body
+     (display-warning 'ignore "Insering nil value." :warning)))
 
 (defun tr:is-node (list)
   (if (car list)
@@ -14,6 +18,9 @@
 	nil)
     't))
 
+
+
+;tree walk in org mo
 ;; root
 
 (defvar *tr:root* nil)
@@ -98,37 +105,37 @@
 (defun tr:insert (child parent)
   "insert as last child"
   (valid-node! (list parent)
-       (when (tr:valid-node child)
-	 (let* ((last-child (tr:last-child parent))
-		(new-node (tr:create-new child parent nil nil last-child nil)))
-	   (tr:set-last-child parent new-node)
-	   (if last-child
-	       (tr:set-next-sibling last-child new-node)
-	     (tr:set-first-child parent new-node))))))
+	       (not-nil! child
+			 (let* ((last-child (tr:last-child parent))
+				(new-node (tr:create-new child parent nil nil last-child nil)))
+			   (tr:set-last-child parent new-node)
+			   (if last-child
+			       (tr:set-next-sibling last-child new-node)
+			     (tr:set-first-child parent new-node))))))
 
 (defun tr:insert-after (node previous-sibling)
   "insert after certain node (add right sibling)"
   (valid-node! (list previous-sibling)
-       (when (tr:valid-node node)
-	 (let* ((next-sibling (tr:next-sibling previous-sibling))
-		(parent (tr:parent previous-sibling))
-		(new-node (tr:create-new node parent nil nil previous-sibling next-sibling)))
-	   (tr:set-next-sibling previous-sibling new-node)   ;; set new-node as right sibling of left side node
-	   (if next-sibling
-	       (tr:set-previous-sibling next-sibling new-node) ;; set new-node as left sibling of right node
-	     (tr:set-last-child parent new-node))))))    ;; new-node as last child
+	       (not-nil! node
+			 (let* ((next-sibling (tr:next-sibling previous-sibling))
+				(parent (tr:parent previous-sibling))
+				(new-node (tr:create-new node parent nil nil previous-sibling next-sibling)))
+			   (tr:set-next-sibling previous-sibling new-node)   ;; set new-node as right sibling of left side node
+			   (if next-sibling
+			       (tr:set-previous-sibling next-sibling new-node) ;; set new-node as left sibling of right node
+			     (tr:set-last-child parent new-node))))))    ;; new-node as last child
 
 (defun tr:insert-before (node next-sibling)
   "insert before certain node (add left sibling to node)"
   (valid-node! (list next-sibling)
-       (when (tr:valid-node node)
-	 (let* ((previous-sibling (tr:previous-sibling next-sibling))
-		(parent (tr:parent next-sibling))
-		(new-node (tr:create-new node parent nil nil previous-sibling next-sibling)))
-	   (tr:set-previous-sibling next-sibling new-node)   ;; set new-node as left sibling of right side node
-	   (if previous-sibling
-	       (tr:set-next-sibling previous-sibling new-node) ;; set new-node as right sibling of left side node
-	     (tr:set-first-child parent new-node))))))    ;; new-node as first child
+	       (not-nil! node
+			 (let* ((previous-sibling (tr:previous-sibling next-sibling))
+				(parent (tr:parent next-sibling))
+				(new-node (tr:create-new node parent nil nil previous-sibling next-sibling)))
+			   (tr:set-previous-sibling next-sibling new-node)   ;; set new-node as left sibling of right side node
+			   (if previous-sibling
+			       (tr:set-next-sibling previous-sibling new-node) ;; set new-node as right sibling of left side node
+			     (tr:set-first-child parent new-node))))))    ;; new-node as first child
 
 ;; traverse
 
